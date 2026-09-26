@@ -13,5 +13,14 @@ def render_login_wall():
         username = st.text_input("Name (unique)", placeholder="Unique Name e. g. Karthika Krishna M", key="username")
         submit_button = st.form_submit_button("Start Session", width="stretch")
 
+    if submit_button:
+        if not username:
+            st.error("Name cannot be empty. Please enter a valid name.")
+            return False
+
+        st.session_state["user_id"] = username
+        st.session_state["user_id"] = "1"
+        st.rerun()
+
     return False
 
