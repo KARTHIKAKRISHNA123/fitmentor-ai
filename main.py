@@ -26,6 +26,9 @@ def main():
 
         st.subheader("Workout Plan")
 
+        if not workout_started:
+            st.selectbox("Exercise", options=)
+
         
 
     st.write(f"Hello {st.session_state['username']}, welcome to FitMentor AI! ")
