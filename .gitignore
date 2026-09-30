@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Local data
+data.db
+
+# OS
+.DS_Store
+Thumbs.db
+ml_models
+!ml_models/__init__.py

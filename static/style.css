@@ -1,0 +1,10 @@
+/* Minimal visual polish for FitMentor AI. Safe to extend. */
+h1, h2, h3 {
+    letter-spacing: 0.2px;
+}
+
+div[data-testid="stMetric"] {
+    background-color: rgba(127, 127, 127, 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
