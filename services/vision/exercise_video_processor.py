@@ -1,4 +1,3 @@
-import os
 import threading
 
 import av
@@ -15,6 +14,7 @@ from detectors.biceps_curl import BicepsCurlDetector
 from detectors.shoulder_press import ShoulderPressDetector
 from detectors.lunges import LungesDetector
 from services.config.workout_config import POSE_CONNECTIONS
+from services.paths import MODEL_PATH
 from services.vision.model_loader import ensure_pose_model
 
 
@@ -30,8 +30,9 @@ class VideoProcessorClass(VideoProcessorBase):
         self._latest_metrics = None
         self._exercise_type = "Squats"
 
-        model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
-        model_path = ensure_pose_model(model_path)
+        # main.py already downloads the model on the main thread before the
+        # camera starts; this is just a safety net.
+        model_path = ensure_pose_model(MODEL_PATH)
         base_option = python.BaseOptions(model_asset_path=model_path)
 
         options = vision.PoseLandmarkerOptions(
@@ -53,6 +54,16 @@ class VideoProcessorClass(VideoProcessorBase):
         }
 
         self._frame_timestamps_ms = 0
+
+    def on_ended(self):
+        """Called by streamlit-webrtc when the camera stream stops (End
+        Workout, Stop button, closed tab). Frees the native MediaPipe
+        resources right away instead of waiting for garbage collection -
+        matters on small cloud machines where many sessions come and go."""
+        try:
+            self._landmarker.close()
+        except Exception:
+            pass
 
     def set_latest_metrics(self, metrics):
         with self._lock:
@@ -106,11 +117,13 @@ class VideoProcessorClass(VideoProcessorBase):
         cv2.putText(img, text, (20, h - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     def recv(self, frame):
-        image = np.asarray(cv2.flip(frame.to_ndarray(format="bgr24"), 1), dtype=np.uint8)
+        # Mirror the frame so the user sees themselves like in a mirror.
+        image = np.ascontiguousarray(cv2.flip(frame.to_ndarray(format="bgr24"), 1), dtype=np.uint8)
 
+        # OpenCV frames are BGR; MediaPipe expects RGB.
         mp_image = mp.Image(
             image_format=mp.ImageFormat.SRGB,
-            data=cv2.cvtColor(image, cv2.COLOR_RGB2BGR),
+            data=cv2.cvtColor(image, cv2.COLOR_BGR2RGB),
         )
 
         self._frame_timestamps_ms += 30

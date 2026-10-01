@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
 from groq import Groq
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
 
@@ -11,11 +12,31 @@ from services.coaching.llm import LLMCoach
 from services.coaching.tts import TextToSpeech
 from services.coaching.voice_pipeline import VoicePipeline, autoplay_audio
 from services.config.workout_config import EXERCISE_OPTIONS
+from services.paths import MODEL_PATH, STATIC_DIR
 from services.persistence.exercise_repository import get_users_exercises, init_db
 from services.state.session_defaults import initial_session_defaults
 from services.tracking.metrics import sync_metrics_update
 from services.ui.style_loader import inject_local_font, inject_webrtc_styles, load_css
 from services.vision.exercise_video_processor import VideoProcessorClass
+from services.vision.model_loader import ensure_pose_model, is_model_ready
+
+# Load GROQ_API_KEY / HF_TOKEN from a local .env file when running on your own
+# machine. On Hugging Face / Streamlit Cloud the same names come from the
+# platform's secrets settings instead, and this is simply a no-op.
+load_dotenv()
+
+
+def _get_secret(name):
+    """Reads a setting from the environment (.env locally, Space secrets on
+    Hugging Face) and falls back to Streamlit's secrets.toml if present."""
+    value = os.environ.get(name, "")
+    if value:
+        return value
+    try:
+        return st.secrets.get(name, "")
+    except Exception:
+        # No secrets.toml at all - perfectly normal when using .env instead.
+        return ""
 
 
 def _init_voice_pipeline():
@@ -26,9 +47,7 @@ def _init_voice_pipeline():
         return
 
     try:
-        api_key = os.environ.get("GROQ_API_KEY", "")
-        if not api_key and hasattr(st, "secrets") and "GROQ_API_KEY" in st.secrets:
-            api_key = st.secrets["GROQ_API_KEY"]
+        api_key = _get_secret("GROQ_API_KEY")
 
         if not api_key:
             st.session_state.voice_pipeline = None
@@ -40,6 +59,28 @@ def _init_voice_pipeline():
         st.session_state.voice_pipeline = VoicePipeline(llm_coach, tts)
     except Exception:
         st.session_state.voice_pipeline = None
+
+
+def _ensure_model_ready():
+    """Downloads the pose model on the main thread (where a spinner and a
+    friendly error can be shown) before the camera worker needs it."""
+    if is_model_ready(MODEL_PATH):
+        return True
+    try:
+        with st.spinner("First-time setup: downloading the pose-detection model (~9 MB)..."):
+            ensure_pose_model(MODEL_PATH)
+        return True
+    except Exception as e:
+        st.error(
+            f"Couldn't download the pose-detection model ({e}). "
+            "Check your internet connection and reload the page."
+        )
+        return False
+
+
+def _logout():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
 
 
 def _render_sidebar_plan():
@@ -55,6 +96,11 @@ def _render_sidebar_plan():
         st.session_state.target_sets = int(plan_sets)
         st.session_state.reps_per_set = int(plan_reps)
         st.session_state.reps = 0
+        st.session_state.sets_completed = 0
+        st.session_state.current_set_reps = 0
+        st.session_state.workout_completed = False
+        st.session_state.audio_to_play = None
+        st.session_state.coach_feedback = None
         st.session_state.workout_started = True
         st.session_state.set_cycle_started_at = time.time()
         st.session_state.last_saved_sets_completed = 0
@@ -164,8 +210,8 @@ def main():
         layout="centered",
     )
 
-    load_css(os.path.join(os.getcwd(), "static", "style.css"))
-    inject_local_font(os.path.join(os.getcwd(), "static", "AdobeClean.otf"), "AdobeClean")
+    load_css(str(STATIC_DIR / "style.css"))
+    inject_local_font(str(STATIC_DIR / "AdobeClean.otf"), "AdobeClean")
 
     init_db()
 
@@ -187,6 +233,8 @@ def main():
 
         if not workout_started:
             _render_sidebar_plan()
+            st.divider()
+            st.button("Log out", key="logout_button", width="stretch", on_click=_logout)
         else:
             _render_sidebar_active()
 
@@ -221,12 +269,20 @@ def main():
             """,
             unsafe_allow_html=True,
         )
-    else:
+    elif _ensure_model_ready():
+        # No rtc_configuration on purpose: streamlit-webrtc then picks the ICE
+        # servers itself - a TURN relay if HF_TOKEN (or Twilio credentials)
+        # is set in the environment, otherwise Google's public STUN server.
+        # A TURN relay is what makes the webcam connect reliably when the app
+        # is hosted in the cloud (Hugging Face / Streamlit Cloud).
+        st.caption(
+            "Press **START** below and allow camera access. Stand back so your "
+            "whole body is in frame (side-on works best for push-ups)."
+        )
         context = webrtc_streamer(
             key="exercise-analysis",
             mode=WebRtcMode.SENDRECV,
             video_processor_factory=VideoProcessorClass,
-            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
             media_stream_constraints={"video": True, "audio": False},
             async_processing=True,
         )

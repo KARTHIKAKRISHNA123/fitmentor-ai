@@ -1,15 +1,21 @@
 import sqlite3
 import streamlit as st
-from pathlib import Path
+from services.paths import DB_PATH
 
-_DB_PATH = str(Path(__file__).parent.parent.parent / "data.db")
+_DB_PATH = str(DB_PATH)
 
 
 @st.cache_resource
-def _get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(_DB_PATH, check_same_thread=False)
+def _open_connection(db_path: str) -> sqlite3.Connection:
+    # One shared connection per database file, reused across Streamlit reruns.
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _get_connection() -> sqlite3.Connection:
+    # Reads _DB_PATH at call time, so tests can point it at a temporary file.
+    return _open_connection(_DB_PATH)
 
 
 def init_db() -> None:

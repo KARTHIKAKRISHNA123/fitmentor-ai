@@ -4,16 +4,19 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+.pytest_cache/
 
-# Secrets
+# Secrets - never commit these
 .env
 .streamlit/secrets.toml
 
 # Local data
 data.db
 
+# Model weights (downloaded automatically at first run / Docker build)
+ml_models/*
+!ml_models/__init__.py
+
 # OS
 .DS_Store
 Thumbs.db
-ml_models
-!ml_models/__init__.py

@@ -1,5 +1,9 @@
+import logging
 import time
+
 import streamlit as st
+
+LOGGER = logging.getLogger(__name__)
 
 
 class VoicePipeline:
@@ -77,9 +81,24 @@ class VoicePipeline:
             if now - self.last_spoken_at < self.COOLDOWN_SECONDS:
                 return None
 
-        text = self.llm.give_feedback(event, issue)
-        voice = self.tts.speak(text)
+        # Start the cooldown *before* the network calls, so that if Groq or
+        # gTTS is down we back off for 5 s instead of retrying on every rerun.
         self.last_spoken_at = now
+
+        try:
+            text = self.llm.give_feedback(event, issue)
+        except Exception as e:
+            # A coaching failure (no internet, rate limit, bad key...) must
+            # never crash the workout - rep counting keeps going regardless.
+            LOGGER.warning("LLM coaching failed for event %s: %s", event, e)
+            return None
+
+        try:
+            voice = self.tts.speak(text)
+        except Exception as e:
+            # Still show the text cue on screen even if speech synthesis fails.
+            LOGGER.warning("Text-to-speech failed: %s", e)
+            voice = None
 
         return voice, text
 
