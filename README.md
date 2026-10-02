@@ -10,7 +10,7 @@ tags:
   - computer-vision
   - mediapipe
 pinned: false
-short_description: AI gym coach: live rep counting, form checks, voice cues
+short_description: "AI gym coach - live rep counting, form checks, voice cues"
 ---
 
 # FitMentor AI

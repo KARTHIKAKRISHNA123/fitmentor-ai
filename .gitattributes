@@ -1,0 +1,5 @@
+# Keep line endings consistent across Windows and Linux.
+* text=auto
+# Shell scripts must stay LF, or bash on Windows fails with $'\r': command not found
+*.sh text eol=lf
+Dockerfile text eol=lf
