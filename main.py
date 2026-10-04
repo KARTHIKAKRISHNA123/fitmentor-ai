@@ -228,6 +228,11 @@ def main():
         st.title("🏋️‍♂️ FitMentor AI Coach")
         if st.session_state.get("username"):
             st.caption(f"👤 Logged in as {st.session_state['username']}")
+        if st.session_state.get("voice_pipeline") is None:
+            st.warning(
+                "Voice coach is off: no GROQ_API_KEY found. Add it to your .env "
+                "file (or app secrets) and restart. Rep counting still works."
+            )
 
         st.divider()
         st.subheader("Workout Plan")
