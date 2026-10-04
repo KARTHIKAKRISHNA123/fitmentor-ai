@@ -1,6 +1,6 @@
 ---
 title: FitMentor AI
-emoji: 🏋️
+emoji: 💪
 colorFrom: blue
 colorTo: purple
 sdk: docker
