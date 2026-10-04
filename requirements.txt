@@ -1,9 +1,10 @@
 streamlit==1.54.0
 streamlit-webrtc==0.64.5
-# 1.0.1 ships wheels for Python 3.10-3.13 (0.10.14 stops at 3.12) and pulls in
+# 1.0.1 ships wheels for Python 3.10-3.14 (0.10.14 stops at 3.12) and pulls in
 # opencv-contrib-python, so OpenCV doesn't need its own line here.
 mediapipe==1.0.1
-pandas==2.2.3
+# >= (not ==) so Python 3.14 gets a prebuilt wheel instead of a slow source build
+pandas>=2.2.3
 groq>=0.12.0
 gtts==2.5.3
 python-dotenv==1.2.2

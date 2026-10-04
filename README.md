@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏋️ FitMentor AI
+# FitMentor AI
 
 **A real-time AI gym coach in your browser — it watches your webcam, counts your reps, checks your form, and speaks corrections back to you while you're still mid-set.**
 
@@ -12,28 +12,33 @@
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-65_passing-2EA44F?logo=pytest&logoColor=white)
 
-[Demo](#-demo) · [Architecture](#-overall-architecture) · [Tech Stack](#-technology-stack--complete-breakdown) · [Quick Start](#-installation) · [Deployment](#-deployment-guide) · [Rebuild Guide](#-rebuilding-it-yourself--a-suggested-order)
+[Demo](#demo) · [Architecture](#overall-architecture) · [Tech Stack](#technology-stack--complete-breakdown) · [Quick Start](#installation) · [Deployment](#deployment-guide) · [Rebuild Guide](#rebuilding-it-yourself--a-suggested-order)
 
 </div>
 
 ---
 
-## 📸 Demo
+## Demo
 
-> 📸 *Add screenshots or a demo GIF here — drop the files into [`docs/images/`](docs/images/) and replace this note.*
-> Recommended: **(1)** a GIF of a live squat set with the skeleton overlay and the rep counter rising, **(2)** the sidebar during a workout showing angles and form status, **(3)** the coach feedback banner showing a correction, **(4)** the Workout History table.
+Screenshots of the running app (captured from the real application, not mock-ups):
 
-**Real output of the pose pipeline** — the exact `VideoProcessorClass.recv()` code path, run on a public-domain test photo during automated testing (Biceps Curl mode, ~16 ms per frame on a laptop CPU):
+| 1. Login | 2. Workout planner |
+|---|---|
+| ![Login screen with a single unique-name field](docs/images/01_login.jpg) | ![Sidebar workout planner with exercise, sets and reps, and the empty workout history](docs/images/02_workout_planner.jpg) |
 
-<p align="center"><img src="docs/images/pose_overlay_test.png" alt="FitMentor AI skeleton overlay with landmarks and the SWING: NO SWING status line drawn on a test photo" width="420"></p>
+**3. Workout started** — sidebar switches to live progress (total reps, current set, sets completed) and the camera panel appears with its START button:
+
+![Workout screen for Biceps Curls showing progress metrics and the camera START button](docs/images/03_workout_started.jpg)
+
+> **Live camera demo:** add a short GIF of a biceps-curl set (skeleton overlay + rep counter) as `docs/images/04_live_demo.gif` and link it here.
 
 ---
 
-## 🧩 Problem Statement
+## Problem Statement
 
 Correct form decides whether an exercise builds strength or quietly damages joints. A squat with collapsing knees, a push-up with sagging hips, or a curl powered by a torso swing moves load away from the target muscle and onto structures that weren't built to carry it. Personal trainers fix this by **watching and correcting during the set** — but trainers are expensive and appointment-bound, so most people training at home, in a budget gym, or in a hostel room never get that feedback. Mainstream fitness apps log sets, reps and calories; they can't see *how* you moved.
 
-## 💡 Solution Overview
+## Solution Overview
 
 FitMentor AI recreates the trainer's watch-and-correct loop in software, using only a webcam and a browser:
 
@@ -45,7 +50,7 @@ FitMentor AI recreates the trainer's watch-and-correct loop in software, using o
 
 No dataset or model training is involved: it is **geometry + rules + a prompt-constrained LLM**, which makes every decision explainable line by line.
 
-## ✨ Key Features
+## Key Features
 
 | Feature | What it does | Where it lives |
 |---|---|---|
@@ -62,7 +67,7 @@ No dataset or model training is involved: it is **geometry + rules + a prompt-co
 
 ---
 
-## 🏛️ Overall Architecture
+## Overall Architecture
 
 ```mermaid
 graph TD
@@ -100,7 +105,7 @@ graph TD
   Model -.->|"first-run download"| GCS
 ```
 
-## 🧱 System Architecture
+## System Architecture
 
 ```mermaid
 flowchart LR
@@ -147,7 +152,7 @@ flowchart LR
 
 ---
 
-## 🧰 Technology Stack — Complete Breakdown
+## Technology Stack — Complete Breakdown
 
 > Every package from `requirements.txt`, `requirements-dev.txt`, `packages.txt` and the `Dockerfile`, plus the transitive packages the code calls directly.
 
@@ -193,7 +198,7 @@ flowchart LR
 
 ---
 
-## 🔄 Request Lifecycle
+## Request Lifecycle
 
 ### Flow 1 — One webcam frame (the hot path, ~30 times per second)
 
@@ -265,7 +270,7 @@ login_wall.py :: render_login_wall()
   → session_state.user_id / username → st.rerun() → main UI
 ```
 
-## 🌊 Data Flow
+## Data Flow
 
 ### Component interaction
 
@@ -303,7 +308,7 @@ Errors are contained at the layer they happen in: low landmark visibility → de
 ---
 
 <details>
-<summary><b>📐 UML Diagrams — Full Suite (9 Diagrams + Swimlane)</b></summary>
+<summary><b>UML Diagrams — Full Suite (9 Diagrams + Swimlane)</b></summary>
 
 ### UML 1 — Use Case Diagram
 
@@ -605,7 +610,7 @@ graph TB
 </details>
 
 <details>
-<summary><b>📊 Data Flow Diagrams (Level 0 and Level 1)</b></summary>
+<summary><b>Data Flow Diagrams (Level 0 and Level 1)</b></summary>
 
 ### DFD Level 0 — Context
 
@@ -661,7 +666,7 @@ graph LR
 
 ---
 
-## 📈 Results
+## Results
 
 | Check | Environment | Result |
 |---|---|---|
@@ -671,13 +676,12 @@ graph LR
 | Pose pipeline latency | same CPU, 20 frames | **≈16.5 ms per frame (≈60 FPS)** |
 | End-to-end UI | local server, browser | login → plan → start → end → logout, no errors |
 
-<p align="center"><img src="docs/images/pose_overlay_test.png" alt="Pose overlay output from the automated inference test" width="360"></p>
 
-> ⚠️ Accuracy was verified with synthetic poses (exact joint angles) and manual trials — there is no labelled multi-person dataset, so no precision/recall figures are claimed.
+> **Note:** Accuracy was verified with synthetic poses (exact joint angles) and manual trials — there is no labelled multi-person dataset, so no precision/recall figures are claimed.
 
 ---
 
-## 🎯 How the Detection Works
+## How the Detection Works
 
 ### Turning three points into an angle — `core/base_exercise.py`
 
@@ -711,7 +715,7 @@ Every detector also picks the **more visible side** of the body and ignores land
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 <details>
 <summary>Annotated tree</summary>
@@ -751,14 +755,14 @@ fitmentor-ai/
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 
 - Python **3.10 – 3.13** (MediaPipe 1.0.1 wheels)
 - A webcam and a Chromium/Firefox browser
 - Optional: free **Groq API key** (voice coaching) — [console.groq.com](https://console.groq.com)
 - Optional locally / recommended in the cloud: **Hugging Face read token** (TURN relay) — [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
 
-## 🚀 Installation
+## Installation
 
 ```bash
 git clone https://github.com/KARTHIKAKRISHNA123/fitmentor-ai.git
@@ -771,7 +775,7 @@ streamlit run main.py
 
 Open http://localhost:8501, enter a name, choose an exercise, click **Start Workout**, then **START** and allow camera access. The pose model (~9 MB) downloads automatically the first time.
 
-## 🔐 Environment Variables
+## Environment Variables
 
 | Variable | Required | Used by | Purpose |
 |---|---|---|---|
@@ -782,7 +786,7 @@ Open http://localhost:8501, enter a name, choose an exercise, click **Start Work
 
 Lookup order in `main.py :: _get_secret()`: environment variable (`.env` locally, platform secrets in the cloud) → `st.secrets`.
 
-## ⚙️ Configuration Guide
+## Configuration Guide
 
 - **Exercises, metric fields, skeleton edges, LLM prompt** → `services/config/workout_config.py`
 - **Thresholds** → class constants at the top of each `detectors/*.py`
@@ -790,7 +794,7 @@ Lookup order in `main.py :: _get_secret()`: environment variable (`.env` locally
 - **Model confidence** → `min_*_confidence=0.7` in `VideoProcessorClass.__init__`
 - **Paths** → `services/paths.py`
 
-## 🔌 API Documentation
+## API Documentation
 
 FitMentor AI exposes **no REST API** — it is a single Streamlit application. Its external calls:
 
@@ -802,7 +806,7 @@ FitMentor AI exposes **no REST API** — it is a single Streamlit application. I
 | Outbound | `fastrtc-turn-server-login.hf.space/credentials` | HTTPS GET | `X-HF-Access-Token` | streamlit-webrtc (when `HF_TOKEN` set) |
 | Internal | Streamlit `/_stcore/health` | GET | — | Docker `HEALTHCHECK` |
 
-## 🗄️ Database Schema
+## Database Schema
 
 ```mermaid
 erDiagram
@@ -825,7 +829,7 @@ erDiagram
 
 `add_exercise()` keeps **one row per user, per exercise, per day**: a second set of squats on the same day updates the existing row instead of inserting another. One shared connection is cached with `@st.cache_resource`; all queries are parameterised.
 
-## 🔑 Authentication Flow
+## Authentication Flow
 
 ```mermaid
 sequenceDiagram
@@ -849,9 +853,9 @@ sequenceDiagram
   end
 ```
 
-Username-only by design (academic prototype). See [Security](#-security-considerations).
+Username-only by design (academic prototype). See [Security](#security-considerations).
 
-## 🖥️ Backend Architecture
+## Backend Architecture
 
 There is no separate frontend codebase: Streamlit renders the UI from Python, and the "backend" is the same process. Two execution contexts matter:
 
@@ -860,18 +864,18 @@ There is no separate frontend codebase: Streamlit renders the UI from Python, an
 | Script thread (reruns) | `main.py`, sidebar, `sync_metrics_update`, coaching, DB | use `st.*` |
 | WebRTC worker thread | `VideoProcessorClass.recv`, MediaPipe, detectors | **not** use `st.*`; shares data only through the lock |
 
-## 🔒 Security Considerations
+## Security Considerations
 
 | Threat | Mitigation | Status |
 |---|---|---|
-| API keys leaked to GitHub | `.env` + `.streamlit/secrets.toml` gitignored; keys only from env/secrets | ✅ |
-| SQL injection | Parameterised queries everywhere | ✅ |
-| Video privacy | Frames processed in memory only; never stored or sent to third parties (only text cues go to Groq) | ✅ |
-| Account impersonation | Anyone typing an existing username sees that history | ⚠️ accepted for prototype — add passwords/OAuth before real use |
-| Corrupt model file | Atomic download + minimum-size check | ✅ |
-| XSRF when iframed | Disabled only in the Docker image (needed by HF iframe hosting) | ⚠️ documented |
+| API keys leaked to GitHub | `.env` + `.streamlit/secrets.toml` gitignored; keys only from env/secrets | Mitigated |
+| SQL injection | Parameterised queries everywhere | Mitigated |
+| Video privacy | Frames processed in memory only; never stored or sent to third parties (only text cues go to Groq) | Mitigated |
+| Account impersonation | Anyone typing an existing username sees that history | Accepted for prototype — add passwords/OAuth before real use |
+| Corrupt model file | Atomic download + minimum-size check | Mitigated |
+| XSRF when iframed | Disabled only in the Docker image (needed by HF iframe hosting) | Documented |
 
-## ⚡ Performance Optimizations
+## Performance Optimizations
 
 - MediaPipe in **VIDEO** mode reuses tracking between frames instead of re-detecting every frame.
 - `async_processing=True` keeps video smooth even if processing briefly lags.
@@ -880,7 +884,7 @@ There is no separate frontend codebase: Streamlit renders the UI from Python, an
 - One cached SQLite connection; one landmarker per stream, closed in `on_ended()`.
 - Docker image bakes the model in so the first visitor doesn't wait.
 
-## 📐 Scalability Design
+## Scalability Design
 
 Built for single-user / demo scale. Limits and the path beyond them:
 
@@ -892,26 +896,26 @@ Built for single-user / demo scale. Limits and the path beyond them:
 
 ---
 
-## ☁️ Deployment Guide
+## Deployment Guide
 
 ### Local
 
-See [Installation](#-installation).
+See [Installation](#installation).
 
 ### Streamlit Community Cloud (recommended, free)
 
 1. Push to GitHub.
 2. [share.streamlit.io](https://share.streamlit.io) → **Create app** → repo `KARTHIKAKRISHNA123/fitmentor-ai`, branch `main`, file `main.py`.
-3. **Advanced settings** → Python **3.11** → Secrets:
+3. **Advanced settings** → Python **3.11** recommended (3.14 also works: every package installs from prebuilt wheels) → Secrets:
    ```toml
    GROQ_API_KEY = "your_groq_key"
    HF_TOKEN = "your_hf_read_token"
    ```
-4. **Deploy.** Streamlit installs `requirements.txt` + `packages.txt` (it ignores the Dockerfile). First build ≈ 5–10 min.
+4. **Deploy.** Streamlit installs `requirements.txt` + `packages.txt` (it ignores the Dockerfile). The first build takes about 5–10 minutes (apt graphics libraries + MediaPipe/OpenCV wheels, ~150 MB); later reboots reuse the cache and are much faster.
 
 If the build log says `Unable to locate package libglib2.0-0t64`, change that line in `packages.txt` to `libglib2.0-0` and push.
 
-### 🐳 Docker (optional)
+### Docker (optional)
 
 ```bash
 docker build -t fitmentor-ai .
@@ -928,7 +932,7 @@ No CI pipeline is configured yet. Suggested GitHub Actions job: install `require
 
 ---
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 ```bash
 uv pip install -r requirements-dev.txt
@@ -947,7 +951,7 @@ pytest -q
 
 Synthetic poses are built with `tests/conftest.py :: place_joint()`, which positions three landmarks to produce an **exact** joint angle — so detectors are tested without a camera.
 
-## 🧯 Error Handling Strategy
+## Error Handling Strategy
 
 | Failure | Behaviour |
 |---|---|
@@ -959,11 +963,11 @@ Synthetic poses are built with `tests/conftest.py :: place_joint()`, which posit
 | No `GROQ_API_KEY` | Voice coaching silently disabled |
 | No `secrets.toml` | Handled in `_get_secret()` |
 
-## 📝 Logging Strategy
+## Logging Strategy
 
 Standard `logging` module, module-level loggers (`services.coaching.voice_pipeline`, `services.vision.model_loader`). Coaching and download failures log at `WARNING`. streamlit-webrtc/aiortc logs can be quietened with `logging.getLogger("aioice").setLevel(logging.WARNING)`.
 
-## ⚖️ Engineering Decisions and Tradeoffs
+## Engineering Decisions and Tradeoffs
 
 | Decision | Why | Tradeoff |
 |---|---|---|
@@ -975,18 +979,18 @@ Standard `logging` module, module-level loggers (`services.coaching.voice_pipeli
 | Username-only login | Frictionless demo | Not secure for real users |
 | `mediapipe==1.0.1` | Wheels for Python 3.10–3.13 | Needs `libegl1`/`libgles2` on Linux |
 
-## 🗺️ Future Roadmap
+## Future Roadmap
 
-- [ ] Per-user calibration of thresholds
-- [ ] Labelled multi-person dataset → precision/recall per exercise
-- [ ] Side-view prompts for push-ups
-- [ ] Password/OAuth login + hosted Postgres
-- [ ] More exercises (planks with hold timer, deadlifts)
-- [ ] Offline fallback audio cues
-- [ ] Browser-side inference (MediaPipe WASM) to remove server video load
-- [ ] GitHub Actions CI
+- Per-user calibration of thresholds
+- Labelled multi-person dataset → precision/recall per exercise
+- Side-view prompts for push-ups
+- Password/OAuth login + hosted Postgres
+- More exercises (planks with hold timer, deadlifts)
+- Offline fallback audio cues
+- Browser-side inference (MediaPipe WASM) to remove server video load
+- GitHub Actions CI
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -998,7 +1002,7 @@ Standard `logging` module, module-level loggers (`services.coaching.voice_pipeli
 | `fatal: Unable to create '.git/index.lock'` | `rm -f .git/index.lock` |
 | `LF will be replaced by CRLF` | Harmless on Windows |
 
-## ❓ FAQ
+## FAQ
 
 **Does it record my video?** No. Frames are processed in memory and discarded; only short text cues go to Groq.
 **Does it need a GPU?** No — ≈60 FPS on a laptop CPU in tests.
@@ -1006,7 +1010,7 @@ Standard `logging` module, module-level loggers (`services.coaching.voice_pipeli
 
 ---
 
-## 🧭 Rebuilding It Yourself — a Suggested Order
+## Rebuilding It Yourself — a Suggested Order
 
 1. **`core/base_exercise.py`** — write `calculate_angle()`; test that a right angle gives 90°.
 2. **`detectors/squat.py`** — count reps against fake landmarks (snippet below), no camera yet.
@@ -1032,17 +1036,17 @@ print(SquatDetector().process(landmarks))
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork and create a branch: `git checkout -b feat/my-change`
 2. Add tests for new behaviour; run `pytest -q`
 3. Commit with a conventional message (`feat:`, `fix:`, `test:`) and open a PR
 
-## 📄 License
+## License
 
 No license file has been added yet — all rights reserved by the author until one is chosen (MIT is a common choice for portfolio projects).
 
-## 🙏 Credits and Acknowledgements
+## Credits and Acknowledgements
 
 - Architecture adapted from the open-source reference [`ai-gym-coach`](https://github.com/shradha-khapra/ai-gym-coach) by Shradha Khapra, rebuilt and extended as FitMentor AI.
 - [Google MediaPipe](https://ai.google.dev/edge/mediapipe) BlazePose · [streamlit-webrtc](https://github.com/whitphx/streamlit-webrtc) by whitphx · [Groq](https://groq.com) + Meta Llama 3.3 · [gTTS](https://github.com/pndurang/gTTS)
