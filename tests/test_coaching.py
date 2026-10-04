@@ -119,7 +119,9 @@ def test_llm_coach_builds_prompt_and_trims_history(monkeypatch):
 
     assert text == "Drive through your heels!"
     last = client.requests[-1]
-    assert last["model"] == "llama-3.3-70b-versatile"
+    from services.coaching.llm import PREFERRED_MODELS
+    # FakeGroq can't list models, so the coach falls back to the first preference
+    assert last["model"] == PREFERRED_MODELS[0]
     assert last["messages"][0]["role"] == "system"
     assert last["messages"][-1]["content"] == "Event: ongoing_form_check Form Issue: knees caving in"
     assert len(coach.history) <= LLMCoach.MAX_HISTORY_MESSAGES
