@@ -196,6 +196,7 @@ def _render_history():
             .agg({"Reps": "sum", "Sets": "sum", "Time (sec)": "sum"})
             .reset_index()
         )
+        agg_df["Time (sec)"] = agg_df["Time (sec)"].round().astype(int)
         agg_df.index += 1
         st.table(agg_df)
     else:

@@ -58,7 +58,7 @@ def sync_metrics_update(context):
         newly_completed = sets_completed - last_saved_sets
         now_ts = time.time()
         started_at = st.session_state.get("set_cycle_started_at", now_ts)
-        time_taken = now_ts - started_at
+        time_taken = int(round(now_ts - started_at))  # whole seconds
         user_id = st.session_state.get("user_id", 0)
 
         add_exercise(user_id, exercise, newly_completed * reps_per_set, newly_completed, time_taken)

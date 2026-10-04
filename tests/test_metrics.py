@@ -67,7 +67,7 @@ def test_sets_are_derived_from_reps(harness):
     assert state.sets_completed == 1
     assert state.current_set_reps == 1
     assert state.knee_angle == 120
-    assert saved == [(7, "Squats", 3, 1, 100.0)]
+    assert saved == [(7, "Squats", 3, 1, 100)]
     assert "set_completed" in voice.events
     assert state.workout_completed is False
 
@@ -80,7 +80,7 @@ def test_workout_completion_fires_once(harness):
     assert state.workout_completed is True
     assert voice.events.count("workout_completed") == 1
     # both sets persisted in one go, and not double-saved on the next rerun
-    assert saved == [(7, "Squats", 6, 2, 100.0)]
+    assert saved == [(7, "Squats", 6, 2, 100)]
 
 
 def test_no_pose_triggers_reposition_cue(harness):
