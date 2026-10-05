@@ -40,7 +40,9 @@ Also update README mentions of "Llama 3.3 70B" -> "Groq-hosted LLM (auto-selecte
 ## OPEN ISSUE: Streamlit Community Cloud deploy fails
 App: fitmentor-ai-joy3gkwc2dcyqjxvafcbg2.streamlit.app (Debian trixie, Python 3.14.7 was chosen at deploy).
 Error at `import cv2` in services/vision/exercise_video_processor.py (message redacted; full text in Manage app -> logs - GET IT FIRST).
-Already checked: opencv-contrib-python 5.0.0.93 (pulled by mediapipe 1.0.1) only needs system libs libGL, libglib/libgthread, libSM, libICE, libX11, libXext, libxcb - all installed by packages.txt (libgl1, libglib2.0-0t64, libsm6, libxext6, libegl1, libgles2). So likely not a missing apt lib; suspects: Python 3.14 compatibility of the wheel / numpy, or something in the full traceback.
+Already checked: opencv-contrib-python 5.0.0.93 (pulled by mediapipe 1.0.1) only needs system libs libGL, libglib/libgthread, libSM, libICE, libX11, libXext, libxcb - all installed by packages.txt (libgl1, libglib2.0-0t64, libsm6, libxext6, libegl1, libgles2). So likely not a missing apt lib.
+Ruled out 4 Oct 2026 by reproducing in WSL Ubuntu (Python 3.14, exact requirements.txt): `import cv2` works (wheel is cp37-abi3, numpy 2.5.3), `import av` before `cv2` works, a stale opencv-python-headless 4.10 alongside contrib 5.0 still works, and the whole exercise_video_processor module + every main.py import load. Code and requirements are NOT the bug.
+The Cloud log has no traceback (Cloud redacts it) but shows `uv pip install` starting 15:13 and finishing 15:59 - a hung/interrupted install that later restarts reuse ("Processed dependencies" in ~1s). Leading suspect: a half-written cv2 in the cached venv. `.streamlit/config.toml` sets `showErrorDetails = "full"` so the real message shows on the page.
 Recommended next steps:
 1. Read full log line after the traceback.
 2. Delete the app and redeploy with Advanced settings -> Python 3.11 (version can only be chosen at deploy), secrets GROQ_API_KEY + HF_TOKEN.
